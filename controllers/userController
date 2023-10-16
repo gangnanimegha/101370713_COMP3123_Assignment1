@@ -1,0 +1,46 @@
+const UserModel = require('../models/userModel');
+const validator = require('validator');
+
+const signup = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ status: false, message: 'Invalid email format' });
+    }
+
+    const newUser = new UserModel({ username, email, password });
+    await newUser.save();
+
+    res.status(201).json({
+      status: true,
+      message: 'User registered successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ status: false, message: 'Internal Server Error' });
+  }
+};
+
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await UserModel.findOne({ username, password });
+    if (user) {
+      res.status(200).json({
+        status: true,
+        username,
+        message: 'User logged in successfully',
+      });
+    } else {
+      res.status(401).json({
+        status: false,
+        message: 'Invalid Username and password',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ status: false, message: 'Internal Server Error' });
+  }
+};
+
+module.exports = { signup, login };
